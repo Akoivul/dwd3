@@ -1,0 +1,26 @@
+FROM ubuntu:22.04
+
+WORKDIR /usr/src/app
+
+COPY code/example-frontend .
+
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
+RUN apt-get update && apt-get install -y curl && \
+    curl -sL https://deb.nodesource.com/setup_16.x | bash && \
+    apt-get install -y nodejs && \
+    npm install && \
+    npm run build && \
+    npm install -g serve && \
+    rm -rf node_modules src && \
+    npm cache clean --force && \
+    apt-get purge -y curl && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m appuser
+
+USER appuser
+
+EXPOSE 5001
+
+CMD ["serve", "-s", "-l", "5001", "build"]
